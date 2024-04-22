@@ -106,32 +106,32 @@ const App: React.FC = () => {
                 array.push(blob)
                 setBlobed([...array])
               } else {
-                console.log('Blob not found in IndexedDB');
+                fetch(url)
+                  .then((response) => response.blob())
+                  .then((blob) => {
+
+                    const db = request.result;
+                    const transaction = db.transaction('videos', 'readwrite');
+                    const objectStore = transaction.objectStore('videos');
+
+                    const putRequest = objectStore.put(blob, url);
+                    putRequest.onsuccess = () => {
+                      console.log(`Blob ${blob} for ${url} cached successfully`);
+                      let array = blobed;
+                      array.push(blob)
+                      setBlobed([...array])
+                    };
+                    putRequest.onerror = (error) => {
+                      console.error(`Error caching blob for ${url}:`, error);
+                    };
+                  })
+                  .catch((error) => {
+                    console.error(`Error fetching or converting blob for ${url}:`, error);
+                  });
               }
             })
             .catch((error) => {
-              fetch(url)
-                .then((response) => response.blob())
-                .then((blob) => {
-
-                  const db = request.result;
-                  const transaction = db.transaction('videos', 'readwrite');
-                  const objectStore = transaction.objectStore('videos');
-
-                  const putRequest = objectStore.put(blob, url);
-                  putRequest.onsuccess = () => {
-                    console.log(`Blob ${blob} for ${url} cached successfully`);
-                    let array = blobed;
-                    array.push(blob)
-                    setBlobed([...array])
-                  };
-                  putRequest.onerror = (error) => {
-                    console.error(`Error caching blob for ${url}:`, error);
-                  };
-                })
-                .catch((error) => {
-                  console.error(`Error fetching or converting blob for ${url}:`, error);
-                });
+              console.log(error)
             });
 
 
