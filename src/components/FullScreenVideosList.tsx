@@ -1,25 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import useVideoUrlStore from './store/videoStore';
-import { IndexType } from 'typescript';
+import React from 'react';
 
-const App: React.FC = () => {
-  const [start, setStart] = useState<boolean>(false)
-  const [indexOf, setIndex] = useState<number>(0)
-  const videoUrls = useVideoUrlStore((state) => state.videoUrls);
-  const cachedVideoUrls = localStorage.getItem('videoUrls');
-  const [loading, setLoading] = useState<boolean>(true);
-  const setVideoUrls = useVideoUrlStore((state) => state.setVideoUrls);
-
-  const refVideo = useRef<HTMLVideoElement | null>(null);
-
-  const [blobed, setBlobed] = useState<any[]>([])
-
-  useEffect(() => {
-    if (cachedVideoUrls) {
-      setVideoUrls(JSON.parse(cachedVideoUrls));
-    } else {
-      // Fetch the video URLs from an API or any other source
-      const fetchedVideoUrls = [
+const FullScreenVideosList: React.FC = () => {
+    const array: Array<String> = [
         "https://firebasestorage.googleapis.com/v0/b/aiwill-5f38d.appspot.com/o/ALL%20WORKOUTS%2FSpine%20Redress%2F1_2_180_Stretch.mp4?alt=media&token=6ba74914-9dea-40a6-82cc-8594fc675e6b",
         "https://firebasestorage.googleapis.com/v0/b/aiwill-5f38d.appspot.com/o/ALL%20WORKOUTS%2FYoga%20for%20Mood%20Enhancement%2F8-Point_Salute.mp4?alt=media&token=4768e630-8c15-4c11-b021-54c149116750",
         "https://firebasestorage.googleapis.com/v0/b/aiwill-5f38d.appspot.com/o/ALL%20WORKOUTS%2FReconstruction%20Of%20The%20Anterior%20Cruciate%20Ligament%2F8-12%20week%2FCruciate%20Ligaments%20Functional%20Period%20Part%201%2F8_90_Degrees_Leg_Span_With_Torniquet.mp4?alt=media&token=18c47eb0-db7d-476f-96b3-fa5d979e5d6b",
@@ -51,149 +33,16 @@ const App: React.FC = () => {
         "https://firebasestorage.googleapis.com/v0/b/aiwill-5f38d.appspot.com/o/ALL%20WORKOUTS%2FSlouch%2F1_0_Ball_Stretch.mp4?alt=media&token=acfb0c28-4491-47a5-8ff8-15e360a24d2f"];
 
 
-      setVideoUrls(fetchedVideoUrls);
-    }
-  }, [cachedVideoUrls, setVideoUrls]);
+    return (
+        <div className="h-screen flex flex-wrap">
 
-
-
-
-  useEffect(() => {
-
-
-    function getBlobFromIndexedDB(videoId: string): Promise<Blob | null> {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open('videoCache', 1);
-        request.onerror = () => {
-          reject(request.error);
-        };
-        request.onsuccess = () => {
-          const db = request.result;
-          const transaction = db.transaction('videos', 'readonly');
-          const objectStore = transaction.objectStore('videos');
-          const getRequest = objectStore.get(videoId);
-          getRequest.onsuccess = () => {
-            resolve(getRequest.result);
-          };
-          getRequest.onerror = () => {
-            reject(getRequest.error);
-          };
-        };
-      });
-    }
-
-
-
-
-    async function cacheVideos() {
-      const request = indexedDB.open('videoCache', 1);
-      request.onerror = (event: any) => {
-        console.error('IndexedDB error:', event.target.error);
-      };
-      request.onupgradeneeded = (event) => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains('videos')) {
-          db.createObjectStore('videos');
-        }
-      };
-      request.onsuccess = (event) => {
-
-        videoUrls.forEach((url) => {
-          getBlobFromIndexedDB(url)
-            .then((blob) => {
-              if (blob) {
-                let array = blobed;
-                array.push(blob)
-                setBlobed([...array])
-              } else {
-                console.log('Blob not found in IndexedDB');
-              }
-            })
-            .catch((error) => {
-              fetch(url)
-                .then((response) => response.blob())
-                .then((blob) => {
-
-                  const db = request.result;
-                  const transaction = db.transaction('videos', 'readwrite');
-                  const objectStore = transaction.objectStore('videos');
-
-                  const putRequest = objectStore.put(blob, url);
-                  putRequest.onsuccess = () => {
-                    console.log(`Blob ${blob} for ${url} cached successfully`);
-                    let array = blobed;
-                    array.push(blob)
-                    setBlobed([...array])
-                  };
-                  putRequest.onerror = (error) => {
-                    console.error(`Error caching blob for ${url}:`, error);
-                  };
-                })
-                .catch((error) => {
-                  console.error(`Error fetching or converting blob for ${url}:`, error);
-                });
-            });
-
-
-
-        });
-
-
-        setLoading(false)
-
-        // transaction.oncomplete = () => {
-        //   console.log('Transaction completed');
-        //   db.close();
-        // };
-        // transaction.onerror = (event: any) => {
-        //   console.error('Transaction error:', event.target.error);
-        // };
-      };
-    }
-
-
-    cacheVideos()
-  }, [videoUrls]);
-
-
-  const next = () => {
-    videoUrls.length - 1 > indexOf && setIndex(indexOf + 1)
-
-  }
-
-  const prev = () => {
-    indexOf > 0 && setIndex(indexOf - 1)
-  }
-
-
-
-  return (
-    <div className="p-0 m-0">
-      {!start && !loading && <button onClick={() => setStart(true)} className='w-full px-4 py-3 text-[16px] '>Start</button>}
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        start ? <div className='w-full h-[100vh] relative'>
-          <div className={`w-full z-10 absolute top-0 h-[6px] py-[1px] bg-[#5a5959]`}>
-            <div style={{ width: (indexOf + 1) * 100 / videoUrls.length + "%" }} className={` absolute top-0 h-[4px] bg-white`}>
-            </div>
-          </div>
-          <button onClick={() => prev()} className='absolute z-10 left-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&lt;</button>
-          <video src={URL.createObjectURL(blobed[indexOf])} autoPlay muted controls className="w-full h-full object-contain"></video>
-
-          <button onClick={() => next()} className='absolute z-10 right-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&gt;</button>
-
-        </div>
-          : <div className="flex flex-wrap justify-evenly">
-            {blobed.map((url, index) => (
-              <div key={index} className="w-24 h-32 bg-gray-200 m-1">
-                <video src={URL.createObjectURL(url)} controls className="w-full h-full object-cover"></video>
-              </div>
+            {array.map((item, index) => (
+                <div key={index} className="w-full h-1/6 bg-gray-200 m-1">
+                    <video src={item as string} controls className="w-full h-full object-cover"></video>
+                </div>
             ))}
-          </div>
-      )}
-    </div >
-  );
+        </div>
+    );
 };
 
-export default App;
+export default FullScreenVideosList;
