@@ -174,20 +174,21 @@ const App: React.FC = () => {
         <p>Loading...</p>
       ) : (
         start ? <div className='w-full h-[100vh] relative'>
-          <div className={`w-full z-10 absolute top-0 h-[6px] py-[1px] bg-[#5a5959]`}>
-            <div style={{ width: (indexOf + 1) * 100 / videoUrls.length + "%" }} className={` absolute top-0 h-[4px] bg-white`}>
+          <div className={`w-full z-20 absolute top-0 h-[6px] py-[1px] bg-[#5a5959]`}>
+            <div style={{ width: (indexOf + 1) * 100 / videoUrls.length + "%" }} className={` absolute z-30 top-0 h-[4px] bg-white`}>
             </div>
           </div>
-          <button onClick={() => prev()} className='absolute z-10 left-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&lt;</button>
-          <video src={URL.createObjectURL(blobed[indexOf])} autoPlay muted controls className="w-full h-full object-contain"></video>
+          <button onClick={() => prev()} className='fixed z-50 left-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&lt;</button>
+          <video onDoubleClick={() => console.log("disabled")}
+            onContextMenu={() => console.log("disabled")} src={URL.createObjectURL(blobed[indexOf])} autoPlay muted className="w-full absolute top-0 z-10 object-contain"></video>
 
-          <button onClick={() => next()} className='absolute z-10 right-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&gt;</button>
+          <button onClick={() => next()} className='fixed z-50 right-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&gt;</button>
 
         </div>
           : <div className="flex flex-wrap justify-evenly">
             {blobed.map((url, index) => (
               <div key={index} className="w-24 h-32 bg-gray-200 m-1">
-                <video src={URL.createObjectURL(url)} controls className="w-full h-full object-cover"></video>
+                <video src={URL.createObjectURL(url)} className="w-full h-full object-cover"></video>
               </div>
             ))}
           </div>
