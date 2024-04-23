@@ -180,7 +180,7 @@ const App: React.FC = () => {
           </div>
           <button onClick={() => prev()} className='fixed z-50 left-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&lt;</button>
           <video onDoubleClick={() => console.log("disabled")}
-            onContextMenu={() => console.log("disabled")} src={URL.createObjectURL(blobed[indexOf])} autoPlay muted className="w-full absolute top-0 z-10 object-contain"></video>
+            onContextMenu={() => console.log("disabled")} src={URL.createObjectURL(blobed[indexOf])} autoPlay muted className="h-[100vh] absolute top-0 z-10 object-contain"></video>
 
           <button onClick={() => next()} className='fixed z-50 right-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&gt;</button>
 
