@@ -1,18 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useVideoUrlStore from './store/videoStore';
-import { IndexType } from 'typescript';
+import VideosRow from './components/VideosRow';
+import FullScreenVideosList from './components/FullScreenVideosList';
 
 const App: React.FC = () => {
   const [start, setStart] = useState<boolean>(false)
   const [indexOf, setIndex] = useState<number>(0)
-  const videoUrls = useVideoUrlStore((state) => state.videoUrls);
   const cachedVideoUrls = localStorage.getItem('videoUrls');
-  const [loading, setLoading] = useState<boolean>(true);
+  const videoUrls = useVideoUrlStore((state) => state.videoUrls);
   const setVideoUrls = useVideoUrlStore((state) => state.setVideoUrls);
+  const blobed = useVideoUrlStore((state) => state.blobed);
+  const setBlobed = useVideoUrlStore((state) => state.setBlobed);
+  const loading = useVideoUrlStore((state) => state.loading);
+  const setLoading = useVideoUrlStore((state) => state.setLoading);
 
-  const refVideo = useRef<HTMLVideoElement | null>(null);
 
-  const [blobed, setBlobed] = useState<any[]>([])
 
   useEffect(() => {
     if (cachedVideoUrls) {
@@ -60,7 +62,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
 
-
     function getBlobFromIndexedDB(videoId: string): Promise<Blob | null> {
       return new Promise((resolve, reject) => {
         const request = indexedDB.open('videoCache', 1);
@@ -81,10 +82,6 @@ const App: React.FC = () => {
         };
       });
     }
-
-
-
-
     async function cacheVideos() {
       const request = indexedDB.open('videoCache', 1);
       request.onerror = (event: any) => {
@@ -138,21 +135,12 @@ const App: React.FC = () => {
 
         });
 
-
-        setLoading(false)
-
-        // transaction.oncomplete = () => {
-        //   console.log('Transaction completed');
-        //   db.close();
-        // };
-        // transaction.onerror = (event: any) => {
-        //   console.error('Transaction error:', event.target.error);
-        // };
       };
     }
 
 
-    cacheVideos()
+    cacheVideos().then(() => setLoading(false)).catch((err) => console.log(err))
+
   }, [videoUrls]);
 
 
@@ -173,24 +161,14 @@ const App: React.FC = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        start ? <div className='w-full h-[100vh] relative'>
-          <div className={`w-full z-20 absolute top-0 h-[6px] py-[1px] bg-[#5a5959]`}>
-            <div style={{ width: (indexOf + 1) * 100 / videoUrls.length + "%" }} className={` absolute z-30 top-0 h-[4px] bg-white`}>
-            </div>
-          </div>
-          <button onClick={() => prev()} className='fixed z-50 left-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&lt;</button>
-          <video controls controlsList='nofullscreen' playsInline src={URL.createObjectURL(blobed[indexOf])} autoPlay muted className="w-full h-[100vh] absolute top-0 z-10 object-cover"></video>
-
-          <button onClick={() => next()} className='fixed z-50 right-2 top-[45%] text-[#464646] bg-[#0000003d] w-[40px] h-[40px] rounded-[100%] leading-[40px] text-center font-[700]'>&gt;</button>
-
-        </div>
+        start ? <FullScreenVideosList indexOf={indexOf}
+          videoUrls={videoUrls}
+          blobed={blobed}
+          next={next}
+          prev={prev} />
           : <div className="flex flex-wrap justify-evenly">
             {blobed.map((url, index) => (
-              <div key={index} className="w-24 h-32 bg-gray-200 m-1">
-                <video className="w-full h-full object-cover">
-                  <source src={URL.createObjectURL(url)}></source>
-                </video>
-              </div>
+              <VideosRow index={index} url={url} />
             ))}
           </div>
       )}
